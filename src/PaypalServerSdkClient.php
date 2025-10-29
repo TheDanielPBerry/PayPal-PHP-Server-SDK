@@ -17,6 +17,7 @@ use PaypalServerSdkLib\Authentication\ClientCredentialsAuthManager;
 use PaypalServerSdkLib\Controllers\OAuthAuthorizationController;
 use PaypalServerSdkLib\Controllers\OrdersController;
 use PaypalServerSdkLib\Controllers\PaymentsController;
+use PaypalServerSdkLib\Controllers\SubscriptionsController;
 use PaypalServerSdkLib\Controllers\VaultController;
 use PaypalServerSdkLib\Logging\LoggingConfigurationBuilder;
 use PaypalServerSdkLib\Logging\RequestLoggingConfigurationBuilder;
@@ -33,6 +34,8 @@ class PaypalServerSdkClient implements ConfigurationInterface
     private $payments;
 
     private $vault;
+
+    private $subscriptions;
 
     private $oAuthAuthorization;
 
@@ -277,6 +280,13 @@ class PaypalServerSdkClient implements ConfigurationInterface
             $this->vault = new VaultController($this->client);
         }
         return $this->vault;
+    }
+
+    public function getSubscriptionsController(): SubscriptionsController {
+        if ($this->subscriptions == null) {
+            $this->subscriptions = new SubscriptionsController($this->client);
+        }
+        return $this->subscriptions;
     }
 
     /**
