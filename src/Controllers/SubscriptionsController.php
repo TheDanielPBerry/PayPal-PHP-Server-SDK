@@ -15,11 +15,43 @@ use CoreInterfaces\Core\Request\RequestMethod;
 use PaypalServerSdkLib\Exceptions\ErrorException;
 use PaypalServerSdkLib\Http\ApiResponse;
 use PaypalServerSdkLib\Models\SubscriptionCreatedResponse;
+use stdClass;
 
 /**
  * Controller for subscription related transaction with the paypal api
  */
 class SubscriptionsController extends BaseController {
+
+    /**
+     * @param string $planID The PayPal ID for a plan
+     * @return ApiResponse
+     */
+	public function triggerPlanUpdatedWebhook(string $planID): ApiResponse {
+		$_reqBuilder = $this->requestBuilder(RequestMethod::PATCH, '/v1/billing/plans/' . $planID)
+			->auth('Oauth2')
+			->parameters(
+				HeaderParam::init('Content-Type', 'application/json'),
+				BodyParam::init(['body' => []])->extract('body')
+			);
+
+		$_resHandler = $this->responseHandler()
+			->throwErrorOn(
+				'400',
+				ErrorType::init(
+					'Request is not well-formed, syntactically incorrect, or violates schema.',
+					ErrorException::class
+				)
+			)
+			->throwErrorOn(
+				'403',
+				ErrorType::init('Authorization failed due to insufficient permissions.', ErrorException::class)
+			)
+			->throwErrorOn('500', ErrorType::init('An internal server error has occurred.', ErrorException::class))
+			->type(stdClass::class)
+			->returnApiResponse();
+
+		return $this->execute($_reqBuilder, $_resHandler);
+	}
 
 	public function createSubscription(array $options): ApiResponse {
 		$_reqBuilder = $this->requestBuilder(RequestMethod::POST, '/v1/billing/subscriptions')
