@@ -11,13 +11,16 @@ declare(strict_types=1);
 namespace PaypalServerSdkLib\Controllers;
 
 use Core\Request\Parameters\AdditionalFormParams;
+use Core\Request\Parameters\BodyParam;
 use Core\Request\Parameters\FormParam;
 use Core\Request\Parameters\HeaderParam;
 use Core\Response\Types\ErrorType;
 use CoreInterfaces\Core\Request\RequestMethod;
+use ErrorException;
 use PaypalServerSdkLib\Exceptions\OAuthProviderException;
 use PaypalServerSdkLib\Http\ApiResponse;
 use PaypalServerSdkLib\Models\OAuthToken;
+use stdClass;
 
 class OAuthAuthorizationController extends BaseController
 {
@@ -56,5 +59,32 @@ class OAuthAuthorizationController extends BaseController
             ->returnApiResponse();
 
         return $this->execute($_reqBuilder, $_resHandler);
+    }
+
+
+    public function verifyWebhook(array $options) {
+        $_reqBuilder = $this->requestBuilder(RequestMethod::POST, '/v1/notificationsverify-webhook-signature')
+            ->parameters(
+				HeaderParam::init('Content-Type', 'application/json'),
+				BodyParam::init($options)->extract('body')
+            );
+
+        $_resHandler = $this->responseHandler()
+			->throwErrorOn(
+				'400',
+				ErrorType::init(
+					'Request is not well-formed, syntactically incorrect, or violates schema.',
+					ErrorException::class
+				)
+			)
+			->throwErrorOn(
+				'403',
+				ErrorType::init('Authorization failed due to insufficient permissions.', ErrorException::class)
+			)
+                ->throwErrorOn('500', ErrorType::init('An internal server error has occurred.', ErrorException::class))
+			->type(stdClass::class)
+			->returnApiResponse();
+
+		return $this->execute($_reqBuilder, $_resHandler);
     }
 }
