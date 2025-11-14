@@ -54,6 +54,40 @@ class SubscriptionsController extends BaseController {
 	}
 
 	/**
+	 * Cancel a subscription in paypal
+	 * @param string $paypalSubscriptionID e.g. P-31317796XC421331VZLNMQXY
+	 * @param array $options Has associative field 'reason'
+	 * @return ApiResponse
+	 */
+	public function cancelSubscription(string $paypalSubscriptionID, array $options): ApiResponse {
+		$_reqBuilder = $this->requestBuilder(RequestMethod::POST, "/v1/billing/subscriptions/{$paypalSubscriptionID}/cancel")
+			->auth('Oauth2')
+			->parameters(
+				HeaderParam::init('Content-Type', 'application/json'),
+				BodyParam::init($options)->extract('body'),
+			);
+
+		$_resHandler = $this->responseHandler()
+			->throwErrorOn(
+				'400',
+				ErrorType::init(
+					'Request is not well-formed, syntactically incorrect, or violates schema.',
+					ErrorException::class
+				)
+			)
+			->throwErrorOn(
+				'403',
+				ErrorType::init('Authorization failed due to insufficient permissions.', ErrorException::class)
+			)
+			->throwErrorOn('500', ErrorType::init('An internal server error has occurred.', ErrorException::class))
+			->type(stdClass::class)
+			->returnApiResponse();
+
+		return $this->execute($_reqBuilder, $_resHandler);
+	}
+
+
+	/**
 	 * Capture a payment on a subscription in paypal
 	 * @param string $paypalSubscriptionID e.g. P-31317796XC421331VZLNMQXY
 	 * @param array $options Has associative field 'reason'
