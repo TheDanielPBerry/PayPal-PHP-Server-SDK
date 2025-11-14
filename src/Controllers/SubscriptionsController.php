@@ -53,14 +53,14 @@ class SubscriptionsController extends BaseController {
 		return $this->execute($_reqBuilder, $_resHandler);
 	}
 
-    /**
-     * Cancel a subscription in paypal
-     * @param string $paypalSubscriptionID e.g. P-31317796XC421331VZLNMQXY
-     * @param array $options Has associative field 'reason'
-     * @return ApiResponse
-     */
-	public function cancelSubscription(string $paypalSubscriptionID, array $options): ApiResponse {
-		$_reqBuilder = $this->requestBuilder(RequestMethod::POST, "/v1/billing/subscriptions/{$paypalSubscriptionID}/cancel")
+	/**
+	 * Capture a payment on a subscription in paypal
+	 * @param string $paypalSubscriptionID e.g. P-31317796XC421331VZLNMQXY
+	 * @param array $options Has associative field 'reason'
+	 * @return ApiResponse
+	 */
+	public function captureSubscription(string $paypalSubscriptionID, array $options): ApiResponse {
+		$_reqBuilder = $this->requestBuilder(RequestMethod::POST, "/v1/billing/subscriptions/{$paypalSubscriptionID}/capture")
 			->auth('Oauth2')
 			->parameters(
 				HeaderParam::init('Content-Type', 'application/json'),
